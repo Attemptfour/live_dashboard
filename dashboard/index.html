@@ -9,46 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <style>
-  /* ================================================================
-     THEME TOKENS — light (default) and dark (toggle)
-     ================================================================ */
+  /* THEME TOKENS */
   :root[data-theme="light"] {
-    --bg: #fdfaf5;
-    --bg-elevated: #f6f1e8;
-    --bg-card: #ffffff;
-    --text-primary: #1a1815;
-    --text-secondary: #5c554b;
-    --text-tertiary: #948b7e;
-    --border: #ece5d8;
-    --border-strong: #d8cdb8;
-    --accent: #8b6f3f;
-    --accent-soft: #c4a574;
-    --validated: #6b8a5f;
+    --bg: #fdfaf5; --bg-elevated: #f6f1e8; --bg-card: #ffffff;
+    --text-primary: #1a1815; --text-secondary: #5c554b; --text-tertiary: #948b7e;
+    --border: #ece5d8; --border-strong: #d8cdb8;
+    --accent: #8b6f3f; --accent-soft: #c4a574; --validated: #6b8a5f;
     --shadow-sm: 0 1px 2px rgba(26, 24, 21, 0.04);
     --shadow: 0 2px 8px rgba(26, 24, 21, 0.05), 0 1px 2px rgba(26, 24, 21, 0.03);
-    --plot-bg: #ffffff;
-    --plot-grid: #ece5d8;
-    --plot-text: #5c554b;
-    --plot-line: rgba(139, 111, 63, 0.4);
+    --plot-grid: #ece5d8; --plot-text: #5c554b; --plot-line: rgba(139, 111, 63, 0.4);
   }
   :root[data-theme="dark"] {
-    --bg: #0e0d0c;
-    --bg-elevated: #1a1816;
-    --bg-card: #15130f;
-    --text-primary: #f0ebe0;
-    --text-secondary: #a8a094;
-    --text-tertiary: #6b6357;
-    --border: #2a2724;
-    --border-strong: #3d3934;
-    --accent: #d4a574;
-    --accent-soft: #b8884e;
-    --validated: #8db074;
+    --bg: #0e0d0c; --bg-elevated: #1a1816; --bg-card: #15130f;
+    --text-primary: #f0ebe0; --text-secondary: #a8a094; --text-tertiary: #6b6357;
+    --border: #2a2724; --border-strong: #3d3934;
+    --accent: #d4a574; --accent-soft: #b8884e; --validated: #8db074;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
-    --plot-bg: #15130f;
-    --plot-grid: #2a2724;
-    --plot-text: #a8a094;
-    --plot-line: rgba(212, 165, 116, 0.4);
+    --plot-grid: #2a2724; --plot-text: #a8a094; --plot-line: rgba(212, 165, 116, 0.4);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -62,10 +40,8 @@
   .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
   .app { display: flex; flex-direction: column; height: 100vh; padding: 18px 24px; gap: 14px; }
 
-  /* ================================================================
-     HEADER
-     ================================================================ */
-  header { display: flex; align-items: center; justify-content: space-between; }
+  /* HEADER */
+  header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .brand { display: flex; align-items: center; gap: 12px; }
   .brand-mark {
     width: 28px; height: 28px; border-radius: 6px;
@@ -73,17 +49,14 @@
     display: flex; align-items: center; justify-content: center;
     color: white; font-weight: 600; font-size: 13px; letter-spacing: -0.02em;
   }
-  .brand-text { display: flex; flex-direction: column; }
-  .brand-title { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; color: var(--text-primary); }
+  .brand-title { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; }
   .brand-subtitle { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
   .header-right { display: flex; align-items: center; gap: 10px; }
   .live-pill {
-    display: flex; align-items: center; gap: 6px;
-    padding: 5px 10px;
+    display: flex; align-items: center; gap: 6px; padding: 5px 10px;
     background: rgba(107, 138, 95, 0.08);
     border: 1px solid rgba(107, 138, 95, 0.2);
-    border-radius: 99px;
-    font-size: 11px; color: var(--validated); font-weight: 500;
+    border-radius: 99px; font-size: 11px; color: var(--validated); font-weight: 500;
   }
   :root[data-theme="dark"] .live-pill { background: rgba(141, 176, 116, 0.1); border-color: rgba(141, 176, 116, 0.25); }
   .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--validated); animation: pulse 2s infinite; }
@@ -98,18 +71,17 @@
   .btn.active { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
   .btn.icon-btn { padding: 6px 8px; }
 
-  /* ================================================================
-     STATUS STRIP
-     ================================================================ */
+  /* STATUS STRIP */
   .status-strip {
     display: grid; grid-template-columns: repeat(3, auto) 1fr; gap: 24px;
     align-items: center;
     background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
     padding: 14px 20px; box-shadow: var(--shadow);
+    flex-shrink: 0;
   }
   .status-tile { display: flex; flex-direction: column; gap: 3px; }
   .status-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); font-weight: 600; }
-  .status-value { font-size: 14px; font-weight: 500; color: var(--text-primary); letter-spacing: -0.01em; }
+  .status-value { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
   .status-value.large { font-size: 16px; font-weight: 600; }
   .distribution { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .distribution-bar { height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: var(--bg-elevated); }
@@ -117,15 +89,12 @@
   .regime-current { display: flex; align-items: center; gap: 8px; }
   .regime-current-dot { width: 10px; height: 10px; border-radius: 50%; }
 
-  /* ================================================================
-     CONTROLS
-     ================================================================ */
-  .controls { display: flex; align-items: center; gap: 14px; padding: 0 2px; flex-wrap: wrap; }
+  /* CONTROLS */
+  .controls { display: flex; align-items: center; gap: 14px; padding: 0 2px; flex-wrap: wrap; flex-shrink: 0; }
   .control-group { display: flex; align-items: center; gap: 6px; }
   .control-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); font-weight: 600; margin-right: 4px; }
   .button-row {
-    display: flex; gap: 3px;
-    background: var(--bg-elevated); padding: 3px;
+    display: flex; gap: 3px; background: var(--bg-elevated); padding: 3px;
     border-radius: 7px; border: 1px solid var(--border);
   }
   .button-row .btn {
@@ -136,35 +105,46 @@
   :root[data-theme="dark"] .button-row .btn:hover { background: rgba(255,255,255,0.06); }
   .button-row .btn.active { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-sm); }
 
-  /* ================================================================
-     MAIN GRID
-     ================================================================ */
-  .main { display: grid; grid-template-columns: 1fr 280px; gap: 14px; flex: 1; min-height: 0; }
-  .charts-stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; overflow-y: auto; }
+  /* MAIN */
+  .main {
+    display: grid; grid-template-columns: 1fr 280px; gap: 14px;
+    flex: 1 1 0; min-height: 0;
+  }
+  .charts-stack {
+    display: flex; flex-direction: column; gap: 14px;
+    min-width: 0; min-height: 0; overflow-y: auto; padding-right: 4px;
+  }
+
+  /* CHART PANEL — display:flex by default, .is-hidden hides it completely */
   .chart-panel {
     background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
     box-shadow: var(--shadow); position: relative;
-    flex-shrink: 0;
+    flex-shrink: 0; flex-grow: 0;
     display: flex; flex-direction: column;
+    overflow: hidden;
   }
+  .chart-panel.is-hidden { display: none !important; }
+
   .chart-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 16px 8px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
   }
-  .chart-title { font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.005em; }
+  .chart-title { font-size: 12px; font-weight: 600; letter-spacing: -0.005em; }
   .chart-subtitle { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
   .chart-actions { display: flex; gap: 6px; align-items: center; }
   .chart-actions .btn { font-size: 10px; padding: 4px 8px; }
-  .chart-body { flex: 1; min-height: 0; padding: 8px; }
-  .chart-body.short { height: 280px; }
-  .chart-body.tall { height: 420px; }
 
-  /* ================================================================
-     SIDEBAR (regimes)
-     ================================================================ */
+  /* Chart body MUST have a real height — flex:1 alone collapses */
+  .chart-body { padding: 8px; flex: 1 1 auto; min-height: 0; position: relative; }
+  .chart-body.short { height: 300px; }
+  .chart-body.tall { height: 460px; }
+
+  /* SIDEBAR */
   .sidebar {
     background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
     padding: 16px; overflow-y: auto; box-shadow: var(--shadow);
+    min-height: 0;
   }
   .sidebar-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: 14px; font-weight: 600; }
   .regime-list { display: flex; flex-direction: column; gap: 4px; }
@@ -179,7 +159,7 @@
   .regime-swatch { width: 4px; height: 32px; border-radius: 2px; cursor: pointer; transition: transform 0.1s; }
   .regime-swatch:hover { transform: scaleX(2); }
   .regime-info { min-width: 0; }
-  .regime-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 1px; letter-spacing: -0.01em; }
+  .regime-name { font-size: 12px; font-weight: 600; margin-bottom: 1px; letter-spacing: -0.01em; }
   .regime-stats { font-size: 10px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; }
   .regime-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
   .regime-pct { font-size: 11px; color: var(--text-secondary); font-variant-numeric: tabular-nums; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
@@ -190,51 +170,35 @@
   }
   :root[data-theme="dark"] .badge { background: rgba(141, 176, 116, 0.12); }
 
-  /* Native HTML color picker hidden trick — we keep its UI but customise the swatch */
-  .hidden-color {
-    position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;
-  }
+  .hidden-color { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
 
-  /* ================================================================
-     CANDLE-CHART COLOR DOCK (only shows when candles toggled on)
-     ================================================================ */
   .candle-color-dock {
     display: flex; gap: 8px; align-items: center;
     font-size: 10px; color: var(--text-tertiary);
   }
   .color-swatch {
     width: 18px; height: 18px; border-radius: 4px;
-    border: 1px solid var(--border-strong);
-    cursor: pointer; transition: transform 0.1s;
+    border: 1px solid var(--border-strong); cursor: pointer; transition: transform 0.1s;
     position: relative;
   }
   .color-swatch:hover { transform: scale(1.1); }
   .color-swatch input[type="color"] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer;
-    border: none; padding: 0;
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; border: none; padding: 0;
   }
-
-  /* Hide chart panels we don't want shown */
-  .chart-panel.hidden { display: none; }
-
-  /* Loading state */
-  .loading { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-tertiary); font-size: 12px; }
-
-  /* Plotly tweak: hide modebar by default, show on hover */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; color: var(--text-tertiary); font-size: 12px;
+  }
   .modebar-container { opacity: 0.4; transition: opacity 0.15s; }
   .modebar-container:hover { opacity: 1; }
 </style>
 </head>
 <body>
 <div class="app">
-
-  <!-- ============================================================ -->
-  <!-- HEADER                                                       -->
-  <!-- ============================================================ -->
   <header>
     <div class="brand">
       <div class="brand-mark">M</div>
-      <div class="brand-text">
+      <div>
         <div class="brand-title">Market Regime Detector</div>
         <div class="brand-subtitle">Hourly · BTC · Trained 2019-09 → 2025-09 · Live since 2025-09</div>
       </div>
@@ -248,9 +212,6 @@
     </div>
   </header>
 
-  <!-- ============================================================ -->
-  <!-- STATUS STRIP                                                 -->
-  <!-- ============================================================ -->
   <div class="status-strip">
     <div class="status-tile">
       <div class="status-label">Latest</div>
@@ -274,9 +235,6 @@
     </div>
   </div>
 
-  <!-- ============================================================ -->
-  <!-- CONTROLS                                                     -->
-  <!-- ============================================================ -->
   <div class="controls">
     <div class="control-group">
       <span class="control-label">Period</span>
@@ -308,12 +266,9 @@
     <button class="btn" id="reset-zoom">Reset zoom</button>
   </div>
 
-  <!-- ============================================================ -->
-  <!-- MAIN GRID                                                    -->
-  <!-- ============================================================ -->
   <div class="main">
     <div class="charts-stack">
-      <!-- PRICE PANEL -->
+      <!-- PRICE PANEL — visible at boot -->
       <div class="chart-panel" id="panel-price">
         <div class="chart-header">
           <div>
@@ -326,8 +281,8 @@
         </div>
         <div class="chart-body tall" id="chart-price"><div class="loading">Loading…</div></div>
       </div>
-      <!-- CANDLES PANEL (hidden by default) -->
-      <div class="chart-panel hidden" id="panel-candles">
+      <!-- CANDLES PANEL — hidden at boot via .is-hidden + inline style fallback -->
+      <div class="chart-panel is-hidden" id="panel-candles" style="display:none">
         <div class="chart-header">
           <div>
             <div class="chart-title">Candles · OHLC</div>
@@ -339,8 +294,8 @@
         </div>
         <div class="chart-body tall" id="chart-candles"></div>
       </div>
-      <!-- POSTERIORS PANEL (hidden by default) -->
-      <div class="chart-panel hidden" id="panel-posteriors">
+      <!-- POSTERIORS PANEL -->
+      <div class="chart-panel is-hidden" id="panel-posteriors" style="display:none">
         <div class="chart-header">
           <div>
             <div class="chart-title">Posteriors · Stacked</div>
@@ -349,8 +304,8 @@
         </div>
         <div class="chart-body short" id="chart-posteriors"></div>
       </div>
-      <!-- ENTROPY PANEL (hidden by default) -->
-      <div class="chart-panel hidden" id="panel-entropy">
+      <!-- ENTROPY PANEL -->
+      <div class="chart-panel is-hidden" id="panel-entropy" style="display:none">
         <div class="chart-header">
           <div>
             <div class="chart-title">Entropy</div>
@@ -364,9 +319,6 @@
       </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- SIDEBAR                                                       -->
-    <!-- ============================================================ -->
     <aside class="sidebar">
       <div class="sidebar-title">Regimes — click swatch to recolour</div>
       <div class="regime-list" id="regime-list"></div>
@@ -375,9 +327,7 @@
 </div>
 
 <script>
-/* =====================================================================
-   THEME — light default, dark optional, persisted
-   ===================================================================== */
+/* THEME */
 const root = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
 function setTheme(t) {
@@ -391,15 +341,12 @@ themeToggle.addEventListener('click', () => {
   setTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
 });
 
-/* =====================================================================
-   COLOR STATE — regime colours + candle colours, all persisted
-   ===================================================================== */
+/* COLORS */
 const DEFAULT_REGIME_COLORS = [
   '#e88863','#e8b863','#c5d97a','#7ac598','#d97a7a',
   '#7ac5b8','#7a8fc5','#b09ac5','#d9a87a','#7ac5a3'
 ];
 const DEFAULT_CANDLE_COLORS = { bg: '', up: '#6b8a5f', down: '#b8632b' };
-
 let regimeColors = (() => {
   try { const s = JSON.parse(localStorage.getItem('mrd-regime-colors')); if (Array.isArray(s) && s.length === 10) return s; } catch (e) {}
   return [...DEFAULT_REGIME_COLORS];
@@ -413,9 +360,7 @@ function persistColors() {
   localStorage.setItem('mrd-candle-colors', JSON.stringify(candleColors));
 }
 
-/* =====================================================================
-   STATE
-   ===================================================================== */
+/* STATE */
 const state = {
   data: null,
   visible: { price: true, candles: false, posteriors: false, entropy: false },
@@ -426,9 +371,21 @@ const state = {
 };
 window.__chartsDrawn = false;
 
-/* =====================================================================
-   UTILITIES
-   ===================================================================== */
+/* PANEL VISIBILITY HELPERS — both class and inline style for safety */
+function showPanel(name) {
+  const panel = document.getElementById('panel-' + name);
+  panel.classList.remove('is-hidden');
+  panel.style.display = '';
+  state.visible[name] = true;
+}
+function hidePanel(name) {
+  const panel = document.getElementById('panel-' + name);
+  panel.classList.add('is-hidden');
+  panel.style.display = 'none';
+  state.visible[name] = false;
+}
+
+/* UTILITIES */
 function plotlyLayout(extras = {}) {
   const css = getComputedStyle(root);
   return {
@@ -442,14 +399,13 @@ function plotlyLayout(extras = {}) {
     hoverlabel: { bgcolor: css.getPropertyValue('--bg-card').trim(), bordercolor: css.getPropertyValue('--border-strong').trim(), font: { color: css.getPropertyValue('--text-primary').trim(), family: 'Inter' } },
     dragmode: 'pan',
     showlegend: false,
+    autosize: true,
     ...extras
   };
 }
 function plotlyConfig() {
   return { responsive: true, displaylogo: false, scrollZoom: true, modeBarButtonsToRemove: ['lasso2d','select2d','autoScale2d'] };
 }
-/** Shift open-time by +1 hour to display close-time labels.
-    The underlying timestamp arrays remain unchanged; only the displayed x-axis values shift. */
 function toCloseTime(ts) { return ts.map(t => { const d = new Date(t); d.setUTCHours(d.getUTCHours() + 1); return d.toISOString(); }); }
 function fmtMinutesAgo(ts) {
   const last = new Date(ts);
@@ -463,26 +419,19 @@ function fmtMinutesAgo(ts) {
 }
 function getRegimeColor(r) { return regimeColors[r] || '#888'; }
 
-/* =====================================================================
-   STATUS STRIP
-   ===================================================================== */
 function renderStatus() {
   const d = state.data;
   const n = d.timestamps.length;
   const lastIdx = n - 1;
   const lastTs = d.timestamps[lastIdx];
-  // Display close-time on status strip too
   const closeTime = new Date(lastTs); closeTime.setUTCHours(closeTime.getUTCHours() + 1);
   document.getElementById('status-latest').textContent = closeTime.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
   document.getElementById('status-price').textContent = '$' + d.prices[lastIdx].toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   document.getElementById('status-regime').textContent = 'regime_' + d.regimes[lastIdx];
   document.getElementById('status-entropy').textContent = 'H=' + d.entropies[lastIdx].toFixed(3);
   document.getElementById('regime-current-dot').style.background = getRegimeColor(d.regimes[lastIdx]);
-
-  // Live indicator
   document.getElementById('live-text').textContent = 'Live · ' + fmtMinutesAgo(closeTime);
 
-  // 7-day distribution (last 168 hours)
   const window = Math.min(168, n);
   const counts = new Array(10).fill(0);
   for (let i = n - window; i < n; i++) counts[d.regimes[i]]++;
@@ -499,17 +448,12 @@ function renderStatus() {
   }
 }
 
-/* =====================================================================
-   REGIME SIDEBAR
-   ===================================================================== */
 function renderRegimeList() {
   const list = document.getElementById('regime-list');
   list.innerHTML = '';
   const counts = new Array(10).fill(0);
   for (const r of state.data.regimes) counts[r]++;
   const total = state.data.regimes.length;
-
-  // Per-regime sigma and mu (next-bar return) computed once
   const sigmaMu = computeRegimeStats();
 
   for (let r = 0; r < 10; r++) {
@@ -531,7 +475,6 @@ function renderRegimeList() {
     list.appendChild(row);
   }
 
-  // Wire color pickers
   list.querySelectorAll('.regime-swatch').forEach(swatch => {
     const r = +swatch.getAttribute('data-regime');
     const input = swatch.querySelector('input[type="color"]');
@@ -541,14 +484,12 @@ function renderRegimeList() {
       swatch.style.background = e.target.value;
       persistColors();
       renderStatus();
-      renderRegimeList();
       if (state.visible.price) drawPriceChart();
       if (state.visible.posteriors) drawPosteriorsChart();
     });
   });
 }
 function computeRegimeStats() {
-  // Per-regime sigma (std of next-hour log-return %) and mu (mean of same)
   const buckets = Array.from({ length: 10 }, () => []);
   const p = state.data.prices;
   const r = state.data.regimes;
@@ -570,9 +511,6 @@ function rgbToHex(c) {
   return '#' + m.slice(0, 3).map(x => (+x).toString(16).padStart(2, '0')).join('');
 }
 
-/* =====================================================================
-   PRICE CHART
-   ===================================================================== */
 function drawPriceChart() {
   const d = state.data;
   const x = toCloseTime(d.timestamps);
@@ -595,11 +533,9 @@ function drawPriceChart() {
   Plotly.react('chart-price', traces, layout, plotlyConfig());
   attachZoomSync('chart-price');
   applyCurrentRangeIfAny('chart-price');
+  setTimeout(() => Plotly.Plots.resize('chart-price'), 50);
 }
 
-/* =====================================================================
-   CANDLE CHART
-   ===================================================================== */
 function drawCandlesChart() {
   const d = state.data;
   const x = toCloseTime(d.timestamps);
@@ -619,14 +555,13 @@ function drawCandlesChart() {
   if (candleColors.bg) layout.plot_bgcolor = candleColors.bg;
   Plotly.react('chart-candles', [trace], layout, plotlyConfig());
   attachZoomSync('chart-candles');
+  setTimeout(() => Plotly.Plots.resize('chart-candles'), 50);
 
-  // Auto-zoom to last 60 days when first opened
   const n = d.timestamps.length;
   const lookback = Math.min(60 * 24, n);
   const xRange = [x[Math.max(0, n - lookback)], x[n - 1]];
   Plotly.relayout('chart-candles', { 'xaxis.range': xRange });
 
-  // Click a candle to recolour
   document.getElementById('chart-candles').on('plotly_click', evt => {
     if (!evt.points || !evt.points.length) return;
     const p = evt.points[0];
@@ -636,13 +571,9 @@ function drawCandlesChart() {
   });
 }
 
-/* =====================================================================
-   POSTERIORS CHART
-   ===================================================================== */
 function drawPosteriorsChart() {
   const d = state.data;
   const x = toCloseTime(d.timestamps);
-  // Decimate posteriors to ~1500 bins for SVG rendering performance
   const N = d.timestamps.length;
   const target = Math.min(N, 1500);
   const stride = Math.max(1, Math.floor(N / target));
@@ -664,11 +595,9 @@ function drawPosteriorsChart() {
   Plotly.react('chart-posteriors', traces, layout, plotlyConfig());
   attachZoomSync('chart-posteriors');
   applyCurrentRangeIfAny('chart-posteriors');
+  setTimeout(() => Plotly.Plots.resize('chart-posteriors'), 50);
 }
 
-/* =====================================================================
-   ENTROPY CHART
-   ===================================================================== */
 function drawEntropyChart() {
   const d = state.data;
   const x = toCloseTime(d.timestamps);
@@ -693,11 +622,9 @@ function drawEntropyChart() {
   Plotly.react('chart-entropy', traces, layout, plotlyConfig());
   attachZoomSync('chart-entropy');
   applyCurrentRangeIfAny('chart-entropy');
+  setTimeout(() => Plotly.Plots.resize('chart-entropy'), 50);
 }
 
-/* =====================================================================
-   ZOOM SYNC — when the user zooms one chart, the others follow
-   ===================================================================== */
 function attachZoomSync(chartId) {
   const el = document.getElementById(chartId);
   if (el._syncWired) return;
@@ -709,11 +636,8 @@ function attachZoomSync(chartId) {
     else if (evt['xaxis.range']) newRange = evt['xaxis.range'];
     else if (evt['xaxis.autorange']) newRange = null;
     else return;
-
-    // Equality short-circuit: avoid feedback loops
     if (rangesEqual(newRange, state.syncedRange)) return;
     state.syncedRange = newRange;
-
     state.syncBusy = true;
     ['chart-price','chart-candles','chart-posteriors','chart-entropy'].forEach(other => {
       if (other === chartId) return;
@@ -735,9 +659,6 @@ function applyCurrentRangeIfAny(chartId) {
   Plotly.relayout(chartId, { 'xaxis.range': state.syncedRange, 'yaxis.autorange': true });
 }
 
-/* =====================================================================
-   PERIOD BUTTONS
-   ===================================================================== */
 document.getElementById('period-row').addEventListener('click', e => {
   const btn = e.target.closest('button[data-period]');
   if (!btn) return;
@@ -770,32 +691,24 @@ function applyPeriod() {
   });
 }
 
-/* =====================================================================
-   SHOW BUTTONS — toggle chart panels
-   ===================================================================== */
 document.getElementById('show-row').addEventListener('click', e => {
   const btn = e.target.closest('button[data-show]');
   if (!btn) return;
   const which = btn.getAttribute('data-show');
-  btn.classList.toggle('active');
-  state.visible[which] = btn.classList.contains('active');
-  document.getElementById('panel-' + which).classList.toggle('hidden', !state.visible[which]);
-
-  // Show/hide candle color dock
-  document.getElementById('candle-color-dock').style.display = state.visible.candles ? 'flex' : 'none';
-
-  // Lazy-draw on enable
-  if (state.visible[which]) {
+  const willShow = !btn.classList.contains('active');
+  btn.classList.toggle('active', willShow);
+  if (willShow) {
+    showPanel(which);
     if (which === 'price') drawPriceChart();
     if (which === 'candles') drawCandlesChart();
     if (which === 'posteriors') drawPosteriorsChart();
     if (which === 'entropy') drawEntropyChart();
+  } else {
+    hidePanel(which);
   }
+  document.getElementById('candle-color-dock').style.display = state.visible.candles ? 'flex' : 'none';
 });
 
-/* =====================================================================
-   LINEAR/LOG TOGGLES (per chart)
-   ===================================================================== */
 document.querySelectorAll('button[data-yaxis-toggle]').forEach(btn => {
   const target = btn.getAttribute('data-yaxis-toggle');
   btn.addEventListener('click', () => {
@@ -807,9 +720,6 @@ document.querySelectorAll('button[data-yaxis-toggle]').forEach(btn => {
   });
 });
 
-/* =====================================================================
-   RESET ZOOM
-   ===================================================================== */
 document.getElementById('reset-zoom').addEventListener('click', () => {
   state.syncedRange = null;
   state.period = 'all';
@@ -821,9 +731,6 @@ document.getElementById('reset-zoom').addEventListener('click', () => {
   });
 });
 
-/* =====================================================================
-   CANDLE COLOR PICKERS
-   ===================================================================== */
 function initCandleColorPickers() {
   const pickers = { bg: document.getElementById('picker-bg'), up: document.getElementById('picker-up'), down: document.getElementById('picker-down') };
   const swatches = { bg: document.getElementById('swatch-bg'), up: document.getElementById('swatch-up'), down: document.getElementById('swatch-down') };
@@ -842,9 +749,6 @@ function initCandleColorPickers() {
   }
 }
 
-/* =====================================================================
-   REDRAW EVERYTHING (on theme change etc.)
-   ===================================================================== */
 window.__redrawAllCharts = () => {
   if (state.visible.price) drawPriceChart();
   if (state.visible.candles) drawCandlesChart();
@@ -852,16 +756,19 @@ window.__redrawAllCharts = () => {
   if (state.visible.entropy) drawEntropyChart();
 };
 
-/* =====================================================================
-   BOOT
-   ===================================================================== */
+// Resize charts on window resize
+window.addEventListener('resize', () => {
+  ['chart-price','chart-candles','chart-posteriors','chart-entropy'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el._syncWired) Plotly.Plots.resize(id);
+  });
+});
+
 async function fetchData() {
-  // Cache-busting query string to bypass browser AND Fastly CDN caching
-  const cacheBust = '?t=' + Math.floor(Date.now() / 60000); // changes every minute
+  const cacheBust = '?t=' + Math.floor(Date.now() / 60000);
   const resp = await fetch('dashboard_data.json' + cacheBust, { cache: 'no-store' });
   if (!resp.ok) throw new Error('HTTP ' + resp.status);
   const data = await resp.json();
-  // Defensive: if opens/highs/lows/closes missing, fall back to prices
   if (!data.opens) data.opens = data.prices.slice();
   if (!data.highs) data.highs = data.prices.slice();
   if (!data.lows) data.lows = data.prices.slice();
@@ -871,6 +778,12 @@ async function fetchData() {
 }
 
 async function boot() {
+  // Defensive: ensure non-price panels are hidden at boot regardless of CSS load order
+  hidePanel('candles');
+  hidePanel('posteriors');
+  hidePanel('entropy');
+  state.visible.price = true;
+
   try {
     state.data = await fetchData();
   } catch (e) {
@@ -884,30 +797,23 @@ async function boot() {
   drawPriceChart();
   window.__chartsDrawn = true;
 
-  // Refresh "X minutes ago" indicator every 30s (cheap, just re-renders header)
   setInterval(renderStatus, 30000);
 
-  // Poll the JSON every 60 seconds to detect new live data
-  // The hourly cron pushes new data shortly after :05, GitHub Pages rebuilds in ~30-60s,
-  // CDN propagates in ~30-60s. So a 60s poll catches new bars within ~2 minutes of availability.
   setInterval(async () => {
     try {
       const fresh = await fetchData();
       const oldLast = state.data.timestamps[state.data.timestamps.length - 1];
       const newLast = fresh.timestamps[fresh.timestamps.length - 1];
-      if (newLast === oldLast) return; // no new data
+      if (newLast === oldLast) return;
       state.data = fresh;
-      // Re-render everything that depends on data
       renderStatus();
       renderRegimeList();
-      // Redraw any charts that are currently visible
       if (state.visible.price) drawPriceChart();
       if (state.visible.candles) drawCandlesChart();
       if (state.visible.posteriors) drawPosteriorsChart();
       if (state.visible.entropy) drawEntropyChart();
       console.log('[live] data refreshed — new last bar: ' + newLast);
     } catch (e) {
-      // Silent fail — keep showing whatever we last had
       console.warn('[live] poll failed:', e.message);
     }
   }, 60000);
