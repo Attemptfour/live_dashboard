@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>Hourly Regime detector for BTC</title>
+<link rel="preconnect" href="https://cdn.plot.ly">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+:root {
+  --bg-base: #0a0a0a;
+  --bg-elev-1: #121212;
+  --bg-elev-2: #1a1a1a;
+  --bg-elev-3: #242424;
+  --border: #2a2a2a;
+  --border-strong: #3a3a3a;
+  --text-primary: #e8e8e8;
+  --text-secondary: #9a9a9a;
+  --text-tertiary: #5a5a5a;
+  --accent: #4ade80;
+  --accent-dim: #166534;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #60a5fa;
+  --validated: #4ade80;
+
+  /* Regime palette - 10 distinct colors, colorblind-aware, dark-theme-tuned */
+  --r0: #f87171;
+  --r1: #fb923c;
+  --r2: #fbbf24;
+  --r3: #84cc16;
+  --r4: #ec4899;
+  --r5: #06b6d4;
+  --r6: #3b82f6;
+  --r7: #a78bfa;
+  --r8: #f472b6;
+  --r9: #14b8a6;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.mono { font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace; }
+
+/* ============ HEADER ============ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  background: var(--bg-elev-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--bg-elev-3);
+  border-color: var(--border-strong);
+}
+
+.btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-icon {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============ MAIN LAYOUT ============ */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.charts-area {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-base);
+  min-height: 0;
+}
+
+.sidebar {
+  background: var(--bg-elev-1);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ============ STATUS TILE ============ */
+.status-tile {
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 24px;
+  align-items: center;
+}
+
+.status-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.status-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.status-value.mono {
+  font-size: 13px;
+}
+
+.posterior-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--bg-elev-3);
+  min-width: 200px;
+}
+
+.posterior-bar-segment {
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.posterior-bar-segment:hover {
+  filter: brightness(1.3);
+}
+
+/* ============ CONTROLS ============ */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-group:not(:last-child) {
+  padding-right: 12px;
+  border-right: 1px solid var(--border);
+}
+
+.control-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* ============ CHARTS ============ */
+.chart-stack {
+  flex: 1;
+  display: grid;
+  grid-template-rows: 2fr 1.5fr 1fr;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.chart-panel {
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-panel:last-child { border-bottom: none; }
+
+.chart-panel.hidden { display: none; }
+
+.chart-panel:last-child { border-bottom: none; }
+
+.chart-panel.hidden { display: none; }
+
+.chart-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  font-size: 13px;
+  z-index: 10;
+}
+
+.chart-loading::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--text-tertiary);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.regime-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.regime-row {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.regime-row:hover {
+  background: var(--bg-elev-3);
+  border-color: var(--border-strong);
+}
+
+.regime-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.regime-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.regime-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.regime-name input {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+  outline: none;
+  padding: 0;
+}
+
+.regime-name input:focus {
+  background: var(--bg-elev-3);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.regime-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.regime-meta .mono {
+  color: var(--text-tertiary);
+}
+
+.regime-pct {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.badge.validated {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--validated);
+}
+
+/* ============ MODAL ============ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-title .regime-swatch {
+  width: 16px;
+  height: 16px;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 22px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.modal-close:hover {
+  background: var(--bg-elev-3);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-elev-2);
+  border-left: 3px solid var(--info);
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-value.positive { color: var(--accent); }
+.stat-value.negative { color: var(--danger); }
+
+.modal-section-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+
+.transition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.transition-row {
+  display: grid;
+  grid-template-columns: 14px auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--bg-elev-2);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.transition-bar {
+  height: 4px;
+  background: var(--bg-elev-3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.transition-bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+/* ============ FOOTER ============ */
+.footer {
+  position: absolute;
+  bottom: 0;
+  right: 8px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  padding: 4px 8px;
+  pointer-events: none;
+}
+
+/* ============ MOBILE ============ */
+@media (max-width: 900px) {
+  body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .charts-area {
+    height: auto;
+  }
+
+  .chart-stack {
+    display: block;
+    height: auto;
+  }
+
+  .header {
+    padding: 10px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brand-title { font-size: 13px; }
+  .brand-subtitle { font-size: 10px; }
+
+  .status-tile {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .status-tile .posterior-bar {
+    grid-column: 1 / -1;
+  }
+
+  .controls {
+    padding: 8px 12px;
+    gap: 4px;
+  }
+
+  .control-group {
+    padding-right: 8px;
+  }
+
+  .control-label { display: none; }
+
+  .btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .charts-area {
+    height: auto;
+  }
+
+  .chart-panel {
+    height: 320px;
+    flex: none;
+  }
+
+  .sidebar {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    max-height: none;
+    height: auto;
+  }
+
+  .modal {
+    max-height: 90vh;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .header-actions .btn:not(.btn-icon) {
+    display: none;
+  }
+}
+
+/* ============ Plotly overrides ============ */
+.js-plotly-plot .plotly .modebar {
+  background: var(--bg-elev-1) !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn path {
+  fill: var(--text-secondary) !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn:hover path {
+  fill: var(--text-primary) !important;
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-title">Hourly Regime detector for BTC</div>
+    <div class="brand-subtitle">Trained 2019-09-20 → 2025-09-01 · Tested 2025-09-01 → 2026-04-16</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="btn-about" title="About">About</button>
+  </div>
+</header>
+
+<div class="status-tile">
+  <div class="status-block">
+    <div class="status-label">Latest</div>
+    <div class="status-value mono" id="status-time">—</div>
+  </div>
+  <div class="status-block">
+    <div class="status-label">Price</div>
+    <div class="status-value mono" id="status-price">—</div>
+  </div>
+  <div class="status-block">
+    <div class="status-label">Current state · entropy</div>
+    <div class="posterior-bar" id="status-posterior" title="Current posterior over 10 regimes"></div>
+  </div>
+  <div class="status-block">
+    <div class="status-label">Regime · H</div>
+    <div class="status-value mono" id="status-regime">—</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <span class="control-label">Period</span>
+    <button class="btn period-btn active" data-period="all">All</button>
+    <button class="btn period-btn" data-period="train">Train</button>
+    <button class="btn period-btn" data-period="test">Test</button>
+    <button class="btn period-btn" data-period="2024">2024+</button>
+    <button class="btn period-btn" data-period="recent">Last 90d</button>
+  </div>
+  <div class="control-group">
+    <span class="control-label">Show</span>
+    <button class="btn toggle-btn active" data-toggle="price">Price</button>
+    <button class="btn toggle-btn" data-toggle="posteriors">Posteriors</button>
+    <button class="btn toggle-btn" data-toggle="entropy">Entropy</button>
+  </div>
+  <div class="control-group">
+    <button class="btn" id="btn-reset">Reset zoom</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="charts-area">
+    <div class="chart-stack">
+      <div class="chart-panel" id="panel-price">
+        <div class="chart-loading">Loading 54k hours of BTC data</div>
+        <div id="chart-price" style="width: 100%; height: 100%;"></div>
+      </div>
+      <div class="chart-panel hidden" id="panel-posteriors">
+        <div id="chart-posteriors" style="width: 100%; height: 100%;"></div>
+      </div>
+      <div class="chart-panel hidden" id="panel-entropy">
+        <div id="chart-entropy" style="width: 100%; height: 100%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Regimes (click to inspect)</div>
+      <div class="regime-list" id="regime-list"></div>
+    </div>
+  </aside>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA LOADING
+// ============================================================
+const REGIME_COLORS = [
+  '#f87171', '#fb923c', '#fbbf24', '#84cc16', '#ec4899',
+  '#06b6d4', '#3b82f6', '#a78bfa', '#f472b6', '#14b8a6'
+];
+
+const STORAGE_KEY = 'regime_detector_v1';
+
+let data = null;
+let metadata = null;
+let userSettings = loadUserSettings();
+let visibility = { price: true, posteriors: false, entropy: false };
+let chartsDrawn = { price: false, posteriors: false, entropy: false };
+let currentPeriod = 'all';
+let currentRange = null;
+
+const PLOTLY_LAYOUT_BASE = {
+  paper_bgcolor: '#0a0a0a',
+  plot_bgcolor: '#0a0a0a',
+  font: {
+    family: 'JetBrains Mono, monospace',
+    size: 11,
+    color: '#9a9a9a'
+  },
+  margin: { t: 20, r: 20, b: 30, l: 60 },
+  hovermode: 'x unified',
+  hoverlabel: {
+    bgcolor: '#1a1a1a',
+    bordercolor: '#3a3a3a',
+    font: { family: 'JetBrains Mono, monospace', size: 11, color: '#e8e8e8' }
+  },
+  xaxis: {
+    gridcolor: '#1a1a1a',
+    linecolor: '#2a2a2a',
+    tickfont: { color: '#9a9a9a', size: 10 },
+    type: 'date'
+  },
+  yaxis: {
+    gridcolor: '#1a1a1a',
+    linecolor: '#2a2a2a',
+    tickfont: { color: '#9a9a9a', size: 10 },
+    zerolinecolor: '#2a2a2a'
+  },
+  showlegend: false
+};
+
+const PLOTLY_CONFIG = {
+  responsive: true,
+  displayModeBar: 'hover',
+  modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d', 'toggleSpikelines'],
+  displaylogo: false
+};
+
+function loadUserSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { regimeNames: {}, regimeColors: {} };
+}
+
+function saveUserSettings() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userSettings));
+  } catch (e) {}
+}
+
+function getRegimeName(k) {
+  return userSettings.regimeNames[k] || metadata.regime_stats[k].name;
+}
+
+function getRegimeColor(k) {
+  return userSettings.regimeColors[k] || REGIME_COLORS[k];
+}
+
+// ============================================================
+// LOAD AND BOOT
+// ============================================================
+async function boot() {
+  try {
+    const [dataResp, metaResp] = await Promise.all([
+      fetch('dashboard_data.json'),
+      fetch('regime_metadata.json')
+    ]);
+    data = await dataResp.json();
+    metadata = await metaResp.json();
+
+    document.querySelectorAll('.chart-loading').forEach(el => el.remove());
+
+    renderStatusTile();
+    renderRegimeList();
+    drawAllCharts();
+    setupSyncedZoom();
+    setupControls();
+  } catch (e) {
+    document.querySelectorAll('.chart-loading').forEach(el => {
+      el.textContent = 'Failed to load data: ' + e.message;
+    });
+    console.error(e);
+  }
+}
+
+// ============================================================
+// STATUS TILE
+// ============================================================
+function renderStatusTile() {
+  const idx = data.timestamps.length - 1;
+  const ts = data.timestamps[idx];
+  const price = data.prices[idx];
+  const regime = data.regimes[idx];
+  const entropy = data.entropies[idx];
+
+  document.getElementById('status-time').textContent = ts.replace('T', ' ');
+  document.getElementById('status-price').textContent = '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const regimeEl = document.getElementById('status-regime');
+  regimeEl.innerHTML = `<span style="color: ${getRegimeColor(regime)}">●</span> ${getRegimeName(regime)} <span style="color: var(--text-tertiary); margin-left: 8px;">H=${entropy.toFixed(3)}</span>`;
+
+  // Show average posterior over the last 168 hours (1 week) for richer visualization
+  const WINDOW = Math.min(168, idx + 1);
+  const startIdx = idx - WINDOW + 1;
+  const avgPosteriors = [];
+  for (let k = 0; k < 10; k++) {
+    let s = 0;
+    for (let i = startIdx; i <= idx; i++) s += data.posteriors[k][i];
+    avgPosteriors.push(s / WINDOW);
+  }
+
+  const bar = document.getElementById('status-posterior');
+  bar.innerHTML = '';
+  bar.title = 'Average regime distribution over last 168 hours (1 week)';
+  for (let k = 0; k < 10; k++) {
+    const p = avgPosteriors[k];
+    if (p > 0.005) {
+      const seg = document.createElement('div');
+      seg.className = 'posterior-bar-segment';
+      seg.style.width = (p * 100) + '%';
+      seg.style.background = getRegimeColor(k);
+      seg.title = `${getRegimeName(k)}: ${(p * 100).toFixed(1)}% (avg over last week)`;
+      bar.appendChild(seg);
+    }
+  }
+
+  // Update label to reflect what's actually shown
+  const label = document.querySelector('.status-tile .status-label');
+  // (label already says "current state · entropy"; let's update to be more accurate)
+  const labels = document.querySelectorAll('.status-tile .status-label');
+  if (labels[2]) labels[2].textContent = 'Last 7d distribution';
+}
+
+// ============================================================
+// REGIME LIST (sidebar)
+// ============================================================
+function renderRegimeList() {
+  const list = document.getElementById('regime-list');
+  list.innerHTML = '';
+
+  metadata.regime_stats.forEach(stat => {
+    const k = stat.regime;
+    const row = document.createElement('div');
+    row.className = 'regime-row';
+    row.dataset.regime = k;
+
+    const swatch = document.createElement('div');
+    swatch.className = 'regime-swatch';
+    swatch.style.background = getRegimeColor(k);
+
+    const info = document.createElement('div');
+    info.className = 'regime-info';
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'regime-name';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = getRegimeName(k);
+    nameSpan.style.flex = '1';
+    nameSpan.style.minWidth = '0';
+    nameSpan.style.overflow = 'hidden';
+    nameSpan.style.textOverflow = 'ellipsis';
+    nameDiv.appendChild(nameSpan);
+
+    if (stat.badge === 'validated') {
+      const badge = document.createElement('span');
+      badge.className = 'badge validated';
+      badge.textContent = '✓ validated';
+      badge.title = stat.note;
+      nameDiv.appendChild(badge);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'regime-meta';
+    const sign = stat.mean_next_bar_return_pct >= 0 ? '+' : '';
+    meta.innerHTML = `<span class="mono">σ=${stat.std_next_bar_return_pct.toFixed(2)}%</span> · μ=${sign}${stat.mean_next_bar_return_pct.toFixed(3)}%`;
+
+    info.appendChild(nameDiv);
+    info.appendChild(meta);
+
+    const pct = document.createElement('div');
+    pct.className = 'regime-pct';
+    pct.textContent = stat.pct.toFixed(1) + '%';
+
+    row.appendChild(swatch);
+    row.appendChild(info);
+    row.appendChild(pct);
+
+    row.addEventListener('click', () => openRegimeModal(k));
+    list.appendChild(row);
+  });
+}
+
+// ============================================================
+// CHART DRAWING
+// ============================================================
+function drawAllCharts() {
+  if (visibility.price && !chartsDrawn.price) {
+    drawPriceChart();
+    chartsDrawn.price = true;
+  }
+  if (visibility.posteriors && !chartsDrawn.posteriors) {
+    drawPosteriorsChart();
+    chartsDrawn.posteriors = true;
+  }
+  if (visibility.entropy && !chartsDrawn.entropy) {
+    drawEntropyChart();
+    chartsDrawn.entropy = true;
+  }
+}
+
+function drawPriceChart() {
+  const N = data.timestamps.length;
+  const regimeColorArray = data.regimes.map(r => getRegimeColor(r));
+  const regimeNameArray = data.regimes.map(r => getRegimeName(r));
+
+  const traces = [];
+
+  // Faint connecting line (full resolution)
+  traces.push({
+    x: data.timestamps,
+    y: data.prices,
+    type: 'scattergl',
+    mode: 'lines',
+    name: 'BTC',
+    line: { color: 'rgba(232, 232, 232, 0.25)', width: 1 },
+    hoverinfo: 'skip',
+    showlegend: false
+  });
+
+  // Full 54k regime-colored markers
+  traces.push({
+    x: data.timestamps,
+    y: data.prices,
+    type: 'scattergl',
+    mode: 'markers',
+    name: 'Hour',
+    marker: {
+      color: regimeColorArray,
+      size: 4,
+      line: { width: 0 }
+    },
+    customdata: data.regimes.map((r, i) => [regimeNameArray[i], data.entropies[i]]),
+    hovertemplate: '<b>%{x|%Y-%m-%d %H:%M}</b><br>Price: $%{y:,.2f}<br>%{customdata[0]} · H=%{customdata[1]:.3f}<extra></extra>',
+    showlegend: false
+  });
+
+  // Regime strip below price chart (full resolution)
+  const stripY = data.regimes.map(r => 1);
+  traces.push({
+    x: data.timestamps,
+    y: stripY,
+    type: 'scattergl',
+    mode: 'markers',
+    name: 'Regime',
+    marker: {
+      color: regimeColorArray,
+      size: 8,
+      symbol: 'square',
+      line: { width: 0 }
+    },
+    yaxis: 'y2',
+    hovertemplate: '%{customdata}<extra></extra>',
+    customdata: regimeNameArray,
+    showlegend: false
+  });
+
+  const layout = {
+    ...PLOTLY_LAYOUT_BASE,
+    yaxis: {
+      ...PLOTLY_LAYOUT_BASE.yaxis,
+      title: { text: 'BTC / USD', font: { size: 10, color: '#5a5a5a' } },
+      type: 'log',
+      domain: [0.18, 1.0]
+    },
+    yaxis2: {
+      domain: [0, 0.13],
+      showticklabels: false,
+      showgrid: false,
+      zeroline: false,
+      fixedrange: true,
+      range: [0.5, 1.5],
+      linecolor: '#1a1a1a'
+    },
+    xaxis: { ...PLOTLY_LAYOUT_BASE.xaxis }
+  };
+
+  Plotly.newPlot('chart-price', traces, layout, PLOTLY_CONFIG);
+  attachZoomListener('chart-price');
+}
+
+function drawPosteriorsChart() {
+  // Apply rolling-mean smoothing first (24h window), then decimate to ~1500 bins
+  // Without smoothing, hour-to-hour regime switching produces pixel-noise.
+  // Smoothed posteriors reveal *structural* regime ownership across time.
+  const N = data.timestamps.length;
+  const SMOOTH_WINDOW = 168;  // 1 week — smooths out chop-pair cycling, reveals structural regime ownership
+  const TARGET_BINS = 1500;
+  const binSize = Math.max(1, Math.floor(N / TARGET_BINS));
+
+  // Smooth posteriors with a centered rolling mean
+  const smoothed = Array.from({ length: 10 }, () => new Float32Array(N));
+  for (let k = 0; k < 10; k++) {
+    const src = data.posteriors[k];
+    const half = Math.floor(SMOOTH_WINDOW / 2);
+    let sum = 0;
+    let count = 0;
+    // Initialize sum
+    for (let i = 0; i < Math.min(SMOOTH_WINDOW, N); i++) {
+      sum += src[i];
+      count++;
+    }
+    for (let i = 0; i < N; i++) {
+      smoothed[k][i] = sum / count;
+      // Slide window
+      const removeIdx = i - half;
+      const addIdx = i + half + 1;
+      if (removeIdx >= 0) { sum -= src[removeIdx]; count--; }
+      if (addIdx < N) { sum += src[addIdx]; count++; }
+    }
+  }
+
+  // Now decimate
+  const binnedTimestamps = [];
+  const binnedPosteriors = Array.from({ length: 10 }, () => []);
+
+  for (let i = 0; i < N; i += binSize) {
+    const end = Math.min(i + binSize, N);
+    binnedTimestamps.push(data.timestamps[Math.floor((i + end - 1) / 2)]);
+    for (let k = 0; k < 10; k++) {
+      let sum = 0;
+      for (let j = i; j < end; j++) sum += smoothed[k][j];
+      binnedPosteriors[k].push(sum / (end - i));
+    }
+  }
+
+  const traces = [];
+  for (let k = 0; k < 10; k++) {
+    traces.push({
+      x: binnedTimestamps,
+      y: binnedPosteriors[k],
+      type: 'scatter',
+      mode: 'none',
+      name: getRegimeName(k),
+      stackgroup: 'one',
+      fillcolor: getRegimeColor(k),
+      hovertemplate: `${getRegimeName(k)}: %{y:.1%}<extra></extra>`
+    });
+  }
+
+  const layout = {
+    ...PLOTLY_LAYOUT_BASE,
+    yaxis: {
+      ...PLOTLY_LAYOUT_BASE.yaxis,
+      title: { text: 'P(regime)', font: { size: 10, color: '#5a5a5a' } },
+      tickformat: '.0%',
+      range: [0, 1],
+      fixedrange: true
+    },
+    xaxis: { ...PLOTLY_LAYOUT_BASE.xaxis, showticklabels: false },
+    showlegend: false
+  };
+
+  Plotly.newPlot('chart-posteriors', traces, layout, PLOTLY_CONFIG);
+  attachZoomListener('chart-posteriors');
+}
+
+function drawEntropyChart() {
+  const maxEntropy = Math.log(10);  // max entropy for K=10
+
+  const traces = [
+    {
+      x: data.timestamps,
+      y: data.entropies,
+      type: 'scattergl',
+      mode: 'lines',
+      name: 'H',
+      line: { color: '#fbbf24', width: 1 },
+      fill: 'tozeroy',
+      fillcolor: 'rgba(251, 191, 36, 0.12)',
+      hovertemplate: '<b>%{x|%Y-%m-%d %H:%M}</b><br>H = %{y:.4f}<extra></extra>'
+    },
+    {
+      x: [data.timestamps[0], data.timestamps[data.timestamps.length - 1]],
+      y: [maxEntropy, maxEntropy],
+      type: 'scatter',
+      mode: 'lines',
+      name: 'H_max',
+      line: { color: '#3a3a3a', width: 1, dash: 'dash' },
+      hoverinfo: 'skip',
+      showlegend: false
+    }
+  ];
+
+  const layout = {
+    ...PLOTLY_LAYOUT_BASE,
+    yaxis: {
+      ...PLOTLY_LAYOUT_BASE.yaxis,
+      title: { text: 'entropy', font: { size: 10, color: '#5a5a5a' } },
+      range: [0, maxEntropy * 1.1]
+    },
+    margin: { t: 10, r: 20, b: 40, l: 60 }
+  };
+
+  Plotly.newPlot('chart-entropy', traces, layout, PLOTLY_CONFIG);
+  attachZoomListener('chart-entropy');
+}
+
+// ============================================================
+// SYNCED ZOOM ACROSS PANELS
+// ============================================================
+function setupSyncedZoom() {
+  // Listener attachment moved to attachZoomListener() which is called from each
+  // draw function after Plotly.newPlot completes. Calling el.on() on a div
+  // without a Plotly instance throws and kills script execution.
+  attachZoomListener('chart-price');
+}
+
+let _zoomIsUpdating = false;
+const _zoomPanelKeys = { 'chart-price': 'price', 'chart-posteriors': 'posteriors', 'chart-entropy': 'entropy' };
+
+function _rangesEqual(a, b) {
+  if (a === null && b === null) return true;
+  if (!a || !b) return false;
+  return a[0] === b[0] && a[1] === b[1];
+}
+
+function attachZoomListener(panelId) {
+  const el = document.getElementById(panelId);
+  // Guard: el.on only exists after Plotly has drawn into this div
+  if (!el || typeof el.on !== 'function') return;
+  // Avoid double-attach if function is called multiple times
+  if (el._zoomListenerAttached) return;
+  el._zoomListenerAttached = true;
+
+  el.on('plotly_relayout', (e) => {
+    if (_zoomIsUpdating) return;
+    let newRange = null;
+    if (e['xaxis.range[0]'] !== undefined) {
+      newRange = [e['xaxis.range[0]'], e['xaxis.range[1]']];
+    } else if (e['xaxis.range'] !== undefined) {
+      newRange = e['xaxis.range'];
+    } else if (e['xaxis.autorange']) {
+      newRange = null;
+    } else {
+      return;
+    }
+    // Async-safe guard: plotly_relayout events fire AFTER Plotly.relayout
+    // schedules a redraw, so the synchronous _zoomIsUpdating flag misses
+    // propagated events bouncing back. Short-circuit by range identity.
+    if (_rangesEqual(newRange, currentRange)) return;
+    currentRange = newRange;
+    _zoomIsUpdating = true;
+    Object.keys(_zoomPanelKeys).forEach(otherId => {
+      if (otherId === panelId) return;
+      if (!chartsDrawn[_zoomPanelKeys[otherId]]) return;
+      const update = newRange ? { 'xaxis.range': newRange } : { 'xaxis.autorange': true };
+      Plotly.relayout(otherId, update);
+    });
+    _zoomIsUpdating = false;
+  });
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+function setupControls() {
+  // Period buttons
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyPeriod(btn.dataset.period);
+    });
+  });
+
+  // Toggle buttons
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.toggle;
+      visibility[key] = !visibility[key];
+      btn.classList.toggle('active', visibility[key]);
+      const panel = document.getElementById('panel-' + key);
+      panel.classList.toggle('hidden', !visibility[key]);
+      // Lazy-draw on first activation. CRITICAL: un-hide first, then wait for
+      // layout to compute non-zero panel size before Plotly tries to draw,
+      // otherwise Plotly initializes with 0x0 dimensions and stays invisible.
+      if (visibility[key] && !chartsDrawn[key]) {
+        requestAnimationFrame(() => {
+          if (key === 'price') drawPriceChart();
+          if (key === 'posteriors') drawPosteriorsChart();
+          if (key === 'entropy') drawEntropyChart();
+          chartsDrawn[key] = true;
+        });
+      }
+    });
+  });
+
+  // Reset zoom
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-period="all"]').classList.add('active');
+    applyPeriod('all');
+  });
+
+  // About modal
+  document.getElementById('btn-about').addEventListener('click', openAboutModal);
+
+  // Modal close
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+}
+
+function applyPeriod(period) {
+  const panels = ['chart-price', 'chart-posteriors', 'chart-entropy'];
+  let range;
+  const last = data.timestamps[data.timestamps.length - 1];
+  const first = data.timestamps[0];
+
+  if (period === 'all') {
+    range = null;
+  } else if (period === 'train') {
+    // First train index range
+    const trainEnd = data.splits.findIndex(s => s === 'test');
+    range = [data.timestamps[0], data.timestamps[trainEnd > 0 ? trainEnd - 1 : data.timestamps.length - 1]];
+  } else if (period === 'test') {
+    const testStart = data.splits.findIndex(s => s === 'test');
+    if (testStart >= 0) range = [data.timestamps[testStart], data.timestamps[data.timestamps.length - 1]];
+    else range = null;
+  } else if (period === '2024') {
+    range = ['2024-01-01T00:00:00', last];
+  } else if (period === 'recent') {
+    const lastDate = new Date(last);
+    const startDate = new Date(lastDate.getTime() - 90 * 24 * 60 * 60 * 1000);
+    range = [startDate.toISOString().slice(0, 19), last];
+  }
+
+  const panelKeys = { 'chart-price': 'price', 'chart-posteriors': 'posteriors', 'chart-entropy': 'entropy' };
+  panels.forEach(panelId => {
+    if (!chartsDrawn[panelKeys[panelId]]) return;
+    const update = range ? { 'xaxis.range': range } : { 'xaxis.autorange': true };
+    Plotly.relayout(panelId, update);
+  });
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openRegimeModal(k) {
+  const stat = metadata.regime_stats[k];
+  const titleEl = document.getElementById('modal-title');
+  titleEl.innerHTML = `
+    <span class="regime-swatch" style="background: ${getRegimeColor(k)}"></span>
+    <span>${getRegimeName(k)}</span>
+    ${stat.badge === 'validated' ? '<span class="badge validated">✓ validated</span>' : ''}
+  `;
+
+  const sign = stat.mean_next_bar_return_pct >= 0 ? '+' : '';
+  const retClass = stat.mean_next_bar_return_pct >= 0 ? 'positive' : 'negative';
+
+  let html = '';
+  html += `<div class="modal-note">${stat.note}</div>`;
+
+  html += `<div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Population</div>
+      <div class="stat-value">${stat.pct.toFixed(2)}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Hours</div>
+      <div class="stat-value">${stat.count.toLocaleString()}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">μ next-bar return</div>
+      <div class="stat-value ${retClass}">${sign}${stat.mean_next_bar_return_pct.toFixed(4)}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">σ next-bar return</div>
+      <div class="stat-value">${stat.std_next_bar_return_pct.toFixed(4)}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Mean P(regime|obs)</div>
+      <div class="stat-value">${(stat.mean_posterior * 100).toFixed(1)}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Mean entropy</div>
+      <div class="stat-value">${stat.mean_entropy.toFixed(4)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Self-transition</div>
+      <div class="stat-value">${(stat.self_transition_prob * 100).toFixed(1)}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Annualized Sharpe</div>
+      <div class="stat-value">${stat.annualized_sharpe.toFixed(2)}</div>
+    </div>
+  </div>`;
+
+  // Edit name
+  html += `<div class="modal-section-title">Rename</div>`;
+  html += `<input type="text" id="rename-input" value="${getRegimeName(k).replace(/"/g, '&quot;')}" 
+    style="width: 100%; padding: 8px 10px; background: var(--bg-elev-2); border: 1px solid var(--border); 
+    color: var(--text-primary); border-radius: 6px; font-family: inherit; font-size: 13px;">`;
+  html += `<div style="display: flex; gap: 6px; margin-top: 8px;">
+    <button class="btn" id="rename-save" style="flex: 1;">Save name</button>
+    <button class="btn" id="rename-reset" style="flex: 1;">Reset to default</button>
+  </div>`;
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal').classList.add('active');
+
+  document.getElementById('rename-save').addEventListener('click', () => {
+    const newName = document.getElementById('rename-input').value.trim();
+    if (newName) {
+      userSettings.regimeNames[k] = newName;
+      saveUserSettings();
+      renderRegimeList();
+      renderStatusTile();
+      // Force redraw of any already-drawn charts so renames propagate
+      if (chartsDrawn.price) drawPriceChart();
+      if (chartsDrawn.posteriors) drawPosteriorsChart();
+      if (chartsDrawn.entropy) drawEntropyChart();
+      closeModal();
+    }
+  });
+
+  document.getElementById('rename-reset').addEventListener('click', () => {
+    delete userSettings.regimeNames[k];
+    saveUserSettings();
+    renderRegimeList();
+    renderStatusTile();
+    if (chartsDrawn.price) drawPriceChart();
+    if (chartsDrawn.posteriors) drawPosteriorsChart();
+    if (chartsDrawn.entropy) drawEntropyChart();
+    closeModal();
+  });
+}
+
+function openAboutModal() {
+  document.getElementById('modal-title').innerHTML = '<span>About</span>';
+  document.getElementById('modal-body').innerHTML = `
+    <div style="font-size: 13px; line-height: 1.7; color: var(--text-secondary);">
+      <p style="margin-bottom: 12px;">A regime detection model trained on custom-engineered data taken from the market.</p>
+      <p style="margin-bottom: 12px;"><strong style="color: var(--text-primary);">Trained on data ranging from</strong> 2019-09-20 to 2025-09-01 (49,003 hours).</p>
+      <p><strong style="color: var(--text-primary);">Tested on data from</strong> 2025-09-01 to 2026-04-16 (5,445 hours).</p>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+boot();
+</script>
+</body>
+</html>
