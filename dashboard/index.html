@@ -521,19 +521,38 @@ function drawCandlesChart() {
   const container = document.getElementById('chart-candles');
   const css = getComputedStyle(root);
 
+  // Defensive: ensure data is loaded
+  if (!d || !d.opens || !d.highs || !d.lows || !d.closes || !d.timestamps) {
+    console.warn('[candles] data not ready');
+    return;
+  }
+
   // Defensive: if the container hasn't been laid out yet, wait for next frame
   if (container.clientWidth === 0 || container.clientHeight === 0) {
     requestAnimationFrame(() => drawCandlesChart());
     return;
   }
 
-  // Build OHLC data in the format lightweight-charts expects
+  // Build OHLC data, defensively skipping any row with null/undefined/NaN
+  // lightweight-charts throws "Value is null" on a single bad row and kills the chart silently
   const candleData = [];
+  let skipped = 0;
   for (let i = 0; i < d.timestamps.length; i++) {
+    const o = d.opens[i], h = d.highs[i], l = d.lows[i], c = d.closes[i];
+    if (o == null || h == null || l == null || c == null ||
+        !Number.isFinite(o) || !Number.isFinite(h) || !Number.isFinite(l) || !Number.isFinite(c)) {
+      skipped++;
+      continue;
+    }
     candleData.push({
       time: tsToUnixSeconds(d.timestamps[i]),
-      open: d.opens[i], high: d.highs[i], low: d.lows[i], close: d.closes[i]
+      open: o, high: h, low: l, close: c
     });
+  }
+  if (skipped > 0) console.warn('[candles] skipped ' + skipped + ' rows with bad OHLC');
+  if (candleData.length === 0) {
+    console.error('[candles] no valid OHLC data after filtering');
+    return;
   }
 
   // Tear down any prior instance to avoid stale state
@@ -572,7 +591,6 @@ function drawCandlesChart() {
   state.tvSeries = series;
 
   // Force resize to actual container dimensions after init.
-  // Sometimes the initial sizing is slightly off; this pins it correctly.
   setTimeout(() => {
     if (state.tvChart) {
       state.tvChart.applyOptions({
@@ -589,12 +607,11 @@ function drawCandlesChart() {
     from: candleData[startIdx].time, to: candleData[lastIdx].time
   });
 
-  // Wire zoom sync — when user pans/zooms the candle chart, update Plotly charts
+  // Wire zoom sync
   chart.timeScale().subscribeVisibleTimeRangeChange(range => {
     state.lastInteraction = Date.now();
     if (state.tvSyncBusy) return;
     if (!range) return;
-    // Convert UNIX seconds back to ISO close-time strings for Plotly
     const fromIso = new Date(range.from * 1000).toISOString();
     const toIso = new Date(range.to * 1000).toISOString();
     const newRange = [fromIso, toIso];
@@ -644,13 +661,19 @@ function drawPosteriorsChart() {
     requestAnimationFrame(() => drawPosteriorsChart());
     return;
   }
+  // Defensive: ensure data is loaded and posteriors is in expected K-major shape
+  if (!d || !d.posteriors || !Array.isArray(d.posteriors[0])) {
+    console.warn('[posteriors] data not ready');
+    return;
+  }
   const N = d.timestamps.length;
   const target = Math.min(N, 1500);
   const stride = Math.max(1, Math.floor(N / target));
   const xs = []; const ys = Array.from({ length: 10 }, () => []);
+  // posteriors is K-major: outer length=10, inner length=N (matches PoC + run_hourly.py output)
   for (let i = 0; i < N; i += stride) {
     xs.push(d.timestamps[i]);
-    for (let r = 0; r < 10; r++) ys[r].push(d.posteriors[i][r]);
+    for (let r = 0; r < 10; r++) ys[r].push(d.posteriors[r][i]);
   }
   const xClose = toCloseTime(xs);
   const traces = [];
