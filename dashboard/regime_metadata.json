@@ -24,8 +24,8 @@
       "mean_posterior": 0.9586,
       "mean_entropy": 0.0985,
       "mean_next_bar_return_pct": 0.0328,
-      "std_next_bar_return_pct": 0.7657,
-      "annualized_sharpe": 4.01,
+      "std_next_bar_return_pct": 0.7656,
+      "annualized_sharpe": 4.0,
       "self_transition_prob": 0.386
     },
     {
@@ -33,13 +33,13 @@
       "name": "regime_2",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.77% \u00b7 \u03bc=-0.010% per hour",
-      "count": 3792,
+      "count": 3796,
       "pct": 6.93,
       "mean_posterior": 0.9583,
       "mean_entropy": 0.0974,
-      "mean_next_bar_return_pct": -0.0096,
-      "std_next_bar_return_pct": 0.7659,
-      "annualized_sharpe": -1.17,
+      "mean_next_bar_return_pct": -0.01,
+      "std_next_bar_return_pct": 0.7658,
+      "annualized_sharpe": -1.23,
       "self_transition_prob": 0.348
     },
     {
@@ -103,13 +103,13 @@
       "name": "regime_7",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.42% \u00b7 \u03bc=-0.003% per hour",
-      "count": 10696,
+      "count": 10698,
       "pct": 19.54,
       "mean_posterior": 0.9764,
-      "mean_entropy": 0.057,
+      "mean_entropy": 0.0569,
       "mean_next_bar_return_pct": -0.0028,
       "std_next_bar_return_pct": 0.4173,
-      "annualized_sharpe": -0.62,
+      "annualized_sharpe": -0.63,
       "self_transition_prob": 0.404
     },
     {
