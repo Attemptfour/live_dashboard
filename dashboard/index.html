@@ -521,6 +521,12 @@ function drawCandlesChart() {
   const container = document.getElementById('chart-candles');
   const css = getComputedStyle(root);
 
+  // Defensive: if the container hasn't been laid out yet, wait for next frame
+  if (container.clientWidth === 0 || container.clientHeight === 0) {
+    requestAnimationFrame(() => drawCandlesChart());
+    return;
+  }
+
   // Build OHLC data in the format lightweight-charts expects
   const candleData = [];
   for (let i = 0; i < d.timestamps.length; i++) {
@@ -564,6 +570,17 @@ function drawCandlesChart() {
 
   state.tvChart = chart;
   state.tvSeries = series;
+
+  // Force resize to actual container dimensions after init.
+  // Sometimes the initial sizing is slightly off; this pins it correctly.
+  setTimeout(() => {
+    if (state.tvChart) {
+      state.tvChart.applyOptions({
+        width: container.clientWidth,
+        height: container.clientHeight
+      });
+    }
+  }, 50);
 
   // Default to last 90 days view for first paint
   const lastIdx = candleData.length - 1;
@@ -621,6 +638,12 @@ function tvApplyRange(rangeIso) {
    ============================================================ */
 function drawPosteriorsChart() {
   const d = state.data;
+  const container = document.getElementById('chart-posteriors');
+  // Defensive: wait for layout if container hasn't been sized yet
+  if (container.clientWidth === 0 || container.clientHeight === 0) {
+    requestAnimationFrame(() => drawPosteriorsChart());
+    return;
+  }
   const N = d.timestamps.length;
   const target = Math.min(N, 1500);
   const stride = Math.max(1, Math.floor(N / target));
@@ -645,7 +668,9 @@ function drawPosteriorsChart() {
   Plotly.react('chart-posteriors', traces, layout, plotlyConfig());
   attachPlotlyZoomSync('chart-posteriors');
   applyCurrentRangeIfAny('chart-posteriors');
+  // Force resize after init in case container size finalized after Plotly drew
   setTimeout(() => Plotly.Plots.resize('chart-posteriors'), 50);
+  setTimeout(() => Plotly.Plots.resize('chart-posteriors'), 200);
 }
 
 /* ============================================================
@@ -751,10 +776,17 @@ document.getElementById('show-row').addEventListener('click', e => {
   btn.classList.toggle('active', willShow);
   if (willShow) {
     showPanel(which);
-    if (which === 'price') drawPriceChart();
-    if (which === 'candles') drawCandlesChart();
-    if (which === 'posteriors') drawPosteriorsChart();
-    if (which === 'entropy') drawEntropyChart();
+    // Critical: wait for panel layout to complete before drawing.
+    // display:'' is applied synchronously but the browser hasn't yet computed
+    // the panel's actual size. Drawing now means lightweight-charts gets 0x0
+    // dimensions and Plotly draws into a zero-size container.
+    // Two requestAnimationFrames guarantees the layout pass has run.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (which === 'price') drawPriceChart();
+      if (which === 'candles') drawCandlesChart();
+      if (which === 'posteriors') drawPosteriorsChart();
+      if (which === 'entropy') drawEntropyChart();
+    }));
   } else { hidePanel(which); }
   document.getElementById('candle-color-dock').style.display = state.visible.candles ? 'flex' : 'none';
 });
