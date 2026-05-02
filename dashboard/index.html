@@ -169,6 +169,100 @@
   .loading { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-tertiary); font-size: 12px; }
   .modebar-container { opacity: 0.4; transition: opacity 0.15s; }
   .modebar-container:hover { opacity: 1; }
+
+  /* ============================================================
+     MOBILE / TABLET RESPONSIVE
+     ============================================================ */
+  @media (max-width: 900px) {
+    .app {
+      padding: 12px 14px;
+      gap: 10px;
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+    html, body { overflow: auto; }
+
+    /* Header — brand stacks tighter, allow wrapping */
+    header { flex-wrap: wrap; gap: 10px; }
+    .brand-title { font-size: 14px; }
+    .brand-subtitle { font-size: 10px; }
+    .header-right { gap: 8px; }
+    .live-pill { font-size: 10px; padding: 4px 8px; }
+
+    /* Status strip — stack into 2 columns on phones, single column on narrow */
+    .status-strip {
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+      padding: 12px 14px;
+    }
+    .status-tile { min-width: 0; }
+    .distribution {
+      grid-column: 1 / -1;  /* spans full width */
+    }
+    .status-value { font-size: 13px; }
+    .status-value.large { font-size: 14px; }
+
+    /* Controls row — wrap freely, smaller pills */
+    .controls { gap: 8px; }
+    .control-group { flex-wrap: wrap; }
+    .control-label { font-size: 9px; }
+    .button-row .btn { padding: 4px 7px; font-size: 10px; }
+    .candle-color-dock { display: none !important; } /* hide on mobile - desktop-only feature */
+
+    /* MAIN — stack vertically, sidebar moves below charts */
+    .main {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      flex: none;
+      min-height: 0;
+    }
+    .charts-stack {
+      overflow-y: visible;
+      gap: 10px;
+    }
+
+    /* Sidebar moves below charts on mobile */
+    .sidebar {
+      max-height: none;
+      order: 2;
+    }
+    .charts-stack { order: 1; }
+
+    /* Chart bodies need explicit min-heights so they don't collapse on narrow screens */
+    .chart-body.tall { height: 360px; }
+    .chart-body.short { height: 240px; }
+
+    /* Chart headers - stack title + actions if needed */
+    .chart-header { padding: 10px 12px 6px; flex-wrap: wrap; gap: 8px; }
+    .chart-title { font-size: 12px; }
+    .chart-subtitle { font-size: 9px; }
+    .chart-actions .btn { padding: 3px 6px; font-size: 9px; }
+
+    /* Regime sidebar — keep readable on phone */
+    .regime-row { padding: 8px 8px; gap: 8px; }
+    .regime-name { font-size: 13px; } /* slightly larger for touch */
+    .regime-stats { font-size: 10px; }
+    .regime-pct { font-size: 11px; }
+  }
+
+  /* Extra-narrow screens — single column status strip */
+  @media (max-width: 480px) {
+    .status-strip {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .distribution { grid-column: 1; }
+    .brand-subtitle {
+      /* Truncate the long subtitle gracefully on tiny screens */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
+    }
+    .chart-body.tall { height: 320px; }
+    .chart-body.short { height: 220px; }
+  }
 </style>
 </head>
 <body>
@@ -253,6 +347,7 @@
             <div class="chart-subtitle">Each dot = one hour · colour = regime</div>
           </div>
           <div class="chart-actions">
+            <button class="btn" data-autofit="chart-price" title="Fit Y axis to visible data">Auto</button>
             <button class="btn" data-yaxis-toggle="chart-price">Linear</button>
           </div>
         </div>
@@ -267,6 +362,7 @@
           <div class="chart-actions">
             <button class="btn" id="candle-fit">Fit all</button>
             <button class="btn" id="candle-latest">Latest</button>
+            <button class="btn" data-autofit="chart-candles" title="Fit Y axis to visible data">Auto</button>
             <button class="btn" data-yaxis-toggle="chart-candles">Linear</button>
           </div>
         </div>
@@ -288,6 +384,7 @@
             <div class="chart-subtitle">Shannon entropy of posterior · 0 = certain, 2.30 = uniform</div>
           </div>
           <div class="chart-actions">
+            <button class="btn" data-autofit="chart-entropy" title="Fit Y axis to visible data">Auto</button>
             <button class="btn" data-yaxis-toggle="chart-entropy">Linear</button>
           </div>
         </div>
@@ -574,13 +671,16 @@ function drawCandlesChart() {
     return;
   }
 
-  // Tear down any prior instance to avoid stale state
-  if (state.tvChart) {
-    try { state.tvChart.remove(); } catch (e) {}
-    state.tvChart = null; state.tvSeries = null;
-    container.innerHTML = '';
+  // PERF: if a chart instance already exists, just update its data. DO NOT recreate.
+  // Recreating leaks WebGL contexts. Browsers cap them at ~16 active.
+  if (state.tvChart && state.tvSeries) {
+    state.tvSeries.setData(candleData);
+    // Resize in case container dimensions changed
+    state.tvChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+    return;
   }
 
+  // First-time initialization path
   const chart = LightweightCharts.createChart(container, {
     width: container.clientWidth,
     height: container.clientHeight,
@@ -609,16 +709,6 @@ function drawCandlesChart() {
   state.tvChart = chart;
   state.tvSeries = series;
 
-  // Force resize to actual container dimensions after init.
-  setTimeout(() => {
-    if (state.tvChart) {
-      state.tvChart.applyOptions({
-        width: container.clientWidth,
-        height: container.clientHeight
-      });
-    }
-  }, 50);
-
   // Default to last 90 days view for first paint
   const lastIdx = candleData.length - 1;
   const startIdx = Math.max(0, lastIdx - 90 * 24);
@@ -626,23 +716,28 @@ function drawCandlesChart() {
     from: candleData[startIdx].time, to: candleData[lastIdx].time
   });
 
-  // Wire zoom sync
+  // PERF: throttle the visible-range-change events to 60ms (~16fps).
+  // Without this, every pointer-move during drag fires sync, cascading across charts.
+  let tvSyncTimer = null;
   chart.timeScale().subscribeVisibleTimeRangeChange(range => {
     state.lastInteraction = Date.now();
     if (state.tvSyncBusy) return;
     if (!range) return;
-    const fromIso = new Date(range.from * 1000).toISOString();
-    const toIso = new Date(range.to * 1000).toISOString();
-    const newRange = [fromIso, toIso];
-    if (rangesEqual(newRange, state.syncedRange)) return;
-    state.syncedRange = newRange;
-    state.syncBusy = true;
-    ['chart-price', 'chart-posteriors', 'chart-entropy'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el || !el._syncWired) return;
-      Plotly.relayout(id, { 'xaxis.range': newRange, 'yaxis.autorange': true });
-    });
-    state.syncBusy = false;
+    if (tvSyncTimer) clearTimeout(tvSyncTimer);
+    tvSyncTimer = setTimeout(() => {
+      const fromIso = new Date(range.from * 1000).toISOString();
+      const toIso = new Date(range.to * 1000).toISOString();
+      const newRange = [fromIso, toIso];
+      if (rangesEqual(newRange, state.syncedRange)) return;
+      state.syncedRange = newRange;
+      state.syncBusy = true;
+      ['chart-price', 'chart-posteriors', 'chart-entropy'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || !el._syncWired) return;
+        Plotly.relayout(id, { 'xaxis.range': newRange, 'yaxis.autorange': true });
+      });
+      state.syncBusy = false;
+    }, 60);
   });
 
   // Click to recolour bullish/bearish
@@ -712,7 +807,6 @@ function drawPosteriorsChart() {
   applyCurrentRangeIfAny('chart-posteriors');
   // Force resize after init in case container size finalized after Plotly drew
   setTimeout(() => Plotly.Plots.resize('chart-posteriors'), 50);
-  setTimeout(() => Plotly.Plots.resize('chart-posteriors'), 200);
 }
 
 /* ============================================================
@@ -764,7 +858,9 @@ function attachPlotlyZoomSync(chartId) {
       const update = newRange ? { 'xaxis.range': newRange, 'yaxis.autorange': true } : { 'xaxis.autorange': true, 'yaxis.autorange': true };
       Plotly.relayout(other, update);
     });
-    state.syncBusy = false;
+    // PERF: reset syncBusy async to cover Plotly's echo events (relayout fires both
+    // synchronously on the source chart and asynchronously on the others).
+    setTimeout(() => { state.syncBusy = false; }, 50);
     // Also sync to lightweight-charts
     if (state.visible.candles && state.tvChart) tvApplyRange(newRange);
   });
@@ -864,6 +960,23 @@ document.querySelectorAll('button[data-yaxis-toggle]').forEach(btn => {
 });
 
 /* ============================================================
+   AUTO (FIT Y) BUTTONS — rescales Y axis to fit visible X range
+   ============================================================ */
+document.querySelectorAll('button[data-autofit]').forEach(btn => {
+  const target = btn.getAttribute('data-autofit');
+  btn.addEventListener('click', () => {
+    if (target === 'chart-candles' && state.tvChart) {
+      // For lightweight-charts: trigger price scale autoscale
+      // The chart auto-fits Y to visible X automatically when autoScale is true
+      state.tvChart.priceScale('right').applyOptions({ autoScale: true });
+    } else {
+      // For Plotly: set yaxis.autorange = true and the existing xaxis range stays
+      Plotly.relayout(target, { 'yaxis.autorange': true });
+    }
+  });
+});
+
+/* ============================================================
    RESET ZOOM
    ============================================================ */
 document.getElementById('reset-zoom').addEventListener('click', () => {
@@ -915,15 +1028,22 @@ window.__redrawAllCharts = () => {
   if (state.visible.entropy) drawEntropyChart();
 };
 
+// PERF: debounce resize so a rapid-fire resize burst (devtools opening, scrollbars
+// appearing, window manager events) only triggers one expensive resize pass.
+let _resizeTimer = null;
 window.addEventListener('resize', () => {
-  ['chart-price','chart-posteriors','chart-entropy'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el && el._syncWired) Plotly.Plots.resize(id);
-  });
-  if (state.tvChart) {
-    const c = document.getElementById('chart-candles');
-    state.tvChart.applyOptions({ width: c.clientWidth, height: c.clientHeight });
-  }
+  if (_resizeTimer) clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    ['chart-price','chart-posteriors','chart-entropy'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el._syncWired) Plotly.Plots.resize(id);
+    });
+    if (state.tvChart) {
+      const c = document.getElementById('chart-candles');
+      state.tvChart.applyOptions({ width: c.clientWidth, height: c.clientHeight });
+    }
+    _resizeTimer = null;
+  }, 150);
 });
 
 async function fetchData() {
@@ -954,7 +1074,14 @@ async function boot() {
   drawPriceChart();
   window.__chartsDrawn = true;
 
-  setInterval(renderStatus, 30000);
+  // PERF: lightweight tick — just update the "Live · X min ago" pill, no re-render of distribution bar
+  setInterval(() => {
+    if (!state.data) return;
+    const lastTs = state.data.timestamps[state.data.timestamps.length - 1];
+    const m = lastTs.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+    const closeTime = m ? new Date(Date.UTC(+m[1], +m[2]-1, +m[3], +m[4]+1, +m[5], +m[6])) : new Date(lastTs);
+    document.getElementById('live-text').textContent = 'Live · ' + fmtMinutesAgo(closeTime);
+  }, 30000);
 
   setInterval(async () => {
     if (Date.now() - state.lastInteraction < 5000) return;
@@ -965,6 +1092,10 @@ async function boot() {
       if (newLast === oldLast) return;
       state.data = fresh;
       renderStatus();
+      // PERF: do NOT re-render regime sidebar on every poll. Regime metadata
+      // (sigma, mu, count) is essentially stationary across hours; recomputing
+      // from 54k+ rows + rebinding 20 listeners on every poll is wasteful.
+      // Only recompute every ~5 minutes via separate interval below.
       if (state.visible.price) drawPriceChart();
       if (state.visible.candles) drawCandlesChart();
       if (state.visible.posteriors) drawPosteriorsChart();
@@ -972,6 +1103,9 @@ async function boot() {
       console.log('[live] refreshed — last bar: ' + newLast);
     } catch (e) { console.warn('[live] poll failed:', e.message); }
   }, 60000);
+
+  // PERF: regime list re-render on a slower cadence (5 min) since per-regime stats are slow-moving
+  setInterval(() => { if (state.data) renderRegimeList(); }, 300000);
 }
 boot();
 </script>
