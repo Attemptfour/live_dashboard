@@ -19,13 +19,13 @@
       "name": "regime_1",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.77% \u00b7 \u03bc=+0.032% per hour",
-      "count": 3124,
+      "count": 3126,
       "pct": 5.69,
-      "mean_posterior": 0.9583,
-      "mean_entropy": 0.099,
-      "mean_next_bar_return_pct": 0.0326,
-      "std_next_bar_return_pct": 0.7645,
-      "annualized_sharpe": 4.0,
+      "mean_posterior": 0.9582,
+      "mean_entropy": 0.0991,
+      "mean_next_bar_return_pct": 0.0327,
+      "std_next_bar_return_pct": 0.7642,
+      "annualized_sharpe": 4.01,
       "self_transition_prob": 0.385
     },
     {
@@ -47,13 +47,13 @@
       "name": "regime_3",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.40% \u00b7 \u03bc=-0.003% per hour",
-      "count": 11320,
+      "count": 11322,
       "pct": 20.61,
-      "mean_posterior": 0.9753,
+      "mean_posterior": 0.9752,
       "mean_entropy": 0.0591,
       "mean_next_bar_return_pct": -0.0029,
       "std_next_bar_return_pct": 0.4033,
-      "annualized_sharpe": -0.67,
+      "annualized_sharpe": -0.66,
       "self_transition_prob": 0.413
     },
     {
@@ -107,9 +107,9 @@
       "pct": 19.57,
       "mean_posterior": 0.9764,
       "mean_entropy": 0.0569,
-      "mean_next_bar_return_pct": -0.0024,
+      "mean_next_bar_return_pct": -0.0023,
       "std_next_bar_return_pct": 0.417,
-      "annualized_sharpe": -0.53,
+      "annualized_sharpe": -0.51,
       "self_transition_prob": 0.403
     },
     {
