@@ -53,7 +53,7 @@
       "mean_entropy": 0.0582,
       "mean_next_bar_return_pct": -0.004,
       "std_next_bar_return_pct": 0.3969,
-      "annualized_sharpe": -0.93,
+      "annualized_sharpe": -0.94,
       "self_transition_prob": 0.412
     },
     {
@@ -103,7 +103,7 @@
       "name": "regime_7",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.42% \u00b7 \u03bc=-0.003% per hour",
-      "count": 11670,
+      "count": 11671,
       "pct": 20.22,
       "mean_posterior": 0.9771,
       "mean_entropy": 0.0556,
