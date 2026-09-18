@@ -19,7 +19,7 @@
       "name": "regime_1",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.77% \u00b7 \u03bc=+0.032% per hour",
-      "count": 3309,
+      "count": 3310,
       "pct": 5.69,
       "mean_posterior": 0.9576,
       "mean_entropy": 0.1005,
@@ -51,9 +51,9 @@
       "pct": 21.36,
       "mean_posterior": 0.9756,
       "mean_entropy": 0.0582,
-      "mean_next_bar_return_pct": -0.004,
+      "mean_next_bar_return_pct": -0.0039,
       "std_next_bar_return_pct": 0.3953,
-      "annualized_sharpe": -0.94,
+      "annualized_sharpe": -0.93,
       "self_transition_prob": 0.412
     },
     {
