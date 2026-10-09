@@ -103,7 +103,7 @@
       "name": "regime_7",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.42% \u00b7 \u03bc=-0.003% per hour",
-      "count": 12016,
+      "count": 12017,
       "pct": 20.48,
       "mean_posterior": 0.9772,
       "mean_entropy": 0.0553,
