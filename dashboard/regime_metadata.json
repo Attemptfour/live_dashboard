@@ -47,13 +47,13 @@
       "name": "regime_3",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.40% \u00b7 \u03bc=-0.003% per hour",
-      "count": 12803,
+      "count": 12804,
       "pct": 21.65,
       "mean_posterior": 0.9758,
       "mean_entropy": 0.0577,
-      "mean_next_bar_return_pct": -0.0039,
+      "mean_next_bar_return_pct": -0.0038,
       "std_next_bar_return_pct": 0.3932,
-      "annualized_sharpe": -0.92,
+      "annualized_sharpe": -0.91,
       "self_transition_prob": 0.412
     },
     {
