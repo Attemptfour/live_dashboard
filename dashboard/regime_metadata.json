@@ -131,13 +131,13 @@
       "name": "regime_9",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.26% \u00b7 \u03bc=+0.008% per hour",
-      "count": 3554,
+      "count": 3555,
       "pct": 6.0,
       "mean_posterior": 0.9877,
       "mean_entropy": 0.031,
       "mean_next_bar_return_pct": 0.0078,
       "std_next_bar_return_pct": 0.2632,
-      "annualized_sharpe": 2.78,
+      "annualized_sharpe": 2.76,
       "self_transition_prob": 0.93
     }
   ]
