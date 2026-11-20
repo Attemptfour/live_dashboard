@@ -117,14 +117,14 @@
       "name": "regime_8",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=1.31% \u00b7 \u03bc=+0.010% per hour",
-      "count": 2530,
+      "count": 2531,
       "pct": 4.24,
-      "mean_posterior": 0.9536,
+      "mean_posterior": 0.9537,
       "mean_entropy": 0.1123,
-      "mean_next_bar_return_pct": 0.0106,
+      "mean_next_bar_return_pct": 0.0101,
       "std_next_bar_return_pct": 1.3028,
-      "annualized_sharpe": 0.76,
-      "self_transition_prob": 0.671
+      "annualized_sharpe": 0.72,
+      "self_transition_prob": 0.672
     },
     {
       "regime": 9,
