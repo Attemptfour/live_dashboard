@@ -23,9 +23,9 @@
       "pct": 5.67,
       "mean_posterior": 0.9576,
       "mean_entropy": 0.1007,
-      "mean_next_bar_return_pct": 0.0313,
+      "mean_next_bar_return_pct": 0.0312,
       "std_next_bar_return_pct": 0.7532,
-      "annualized_sharpe": 3.88,
+      "annualized_sharpe": 3.87,
       "self_transition_prob": 0.382
     },
     {
@@ -89,7 +89,7 @@
       "name": "regime_6",
       "badge": "validated",
       "note": "Validated regime \u00b7 \u03c3=0.65% \u00b7 \u03bc=+0.025% per hour",
-      "count": 8508,
+      "count": 8509,
       "pct": 14.24,
       "mean_posterior": 0.9594,
       "mean_entropy": 0.0996,
